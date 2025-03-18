@@ -1,0 +1,1 @@
+##Make sure to run the scripts as python `Scripts\<filename!>` from the main directory! Otherwise it gets wonky

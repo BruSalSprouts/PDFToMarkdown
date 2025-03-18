@@ -14,7 +14,8 @@ def extract_text_from_pdf(pdf_path):
     # Convert PDF pages to images
     images = convert_from_path(pdf_path)
     text_list = []
-
+    print("\n Extracting text from PDF... \n")
+    print("Number of pages: " + str(len(images)))
     for img in images:
         # Convert image to tensor
         pixel_values = processor(images=img, return_tensors="pt").pixel_values
@@ -26,15 +27,15 @@ def extract_text_from_pdf(pdf_path):
 
         # Append extracted text
         text_list.append(text)
-
+        print(f"Extracted text: {text}")
     return text_list
 
 # Extract text from PDF
-pdfPath = "hw4_submission.pdf"
-pathDir = os.path.dirname(pdfPath)
-pathAbs = os.path.realpath(pdfPath)
-print("Current path for pdf: " + pathAbs)
-extracted_text = extract_text_from_pdf(pathAbs)
+pdfFileTest = "CPTS453_HW6_Bruno.pdf"
+cwd = os.getcwd()
+pdfFilePathTest = os.path.join(cwd, "pdfs", pdfFileTest)
+print("Current path for pdf: " + pdfFilePathTest)
+extracted_text = extract_text_from_pdf(pdfFilePathTest)
 
 # Print extracted text from pages
 for i, page_text in enumerate(extracted_text):
