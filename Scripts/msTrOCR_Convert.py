@@ -10,33 +10,35 @@ model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-printed"
 
 print("TrOCR Model Loaded")
 
-def extract_text_from_pdf(pdf_path):
-    # Convert PDF pages to images
-    images = convert_from_path(pdf_path)
+# Fucntion that performs OCR on images
+def extract_text_from_image(image):
     text_list = []
-    print("\n Extracting text from PDF... \n")
-    print("Number of pages: " + str(len(images)))
-    for img in images:
-        # Convert image to tensor
-        pixel_values = processor(images=img, return_tensors="pt").pixel_values
+    print("\n Extracting text from image... \n")
+    pixel_values = processor(images=image, return_tensors="pt").pixel_values
+    with torch.no_grad():
+        generated_ids = model.generate(pixel_values)
+    text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    return text
 
-        # Generate text
-        with torch.no_grad():
-            generated_ids = model.generate(pixel_values)
-        text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
-        # Append extracted text
-        text_list.append(text)
-        print(f"Extracted text: {text}")
-    return text_list
-
-# Extract text from PDF
+# PDF path
 pdfFileTest = "CPTS453_HW6_Bruno.pdf"
 cwd = os.getcwd()
 pdfFilePathTest = os.path.join(cwd, "pdfs", pdfFileTest)
 print("Current path for pdf: " + pdfFilePathTest)
-extracted_text = extract_text_from_pdf(pdfFilePathTest)
 
-# Print extracted text from pages
-for i, page_text in enumerate(extracted_text):
-    print(f"Page {i+1}: {page_text}")
+# Convert PDF to images
+images = convert_from_path(pdfFilePathTest, dpi=300)
+
+# Extract text from each page
+extracted_text = []
+for i, image in enumerate(images):
+    image.save(f"images/page_{i+1}.jpg")
+    image = image.convert("RGB")  # Ensure RGB mode
+    text = extract_text_from_image(image)
+    extracted_text.append(f"Page {i+1}: \n{text}\n")
+
+# Save extracted text to a text file
+with open("extracted_text.txt", "w", encoding="utf-8") as f:
+    f.writelines(extracted_text)
+
+print("Text extracted from PDF and saved to extracted_text.txt")
